@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sissy Name Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink-deep: #d63384;
+    --pink-mid: #f06292;
+    --pink-soft: #f8bbd0;
+    --pink-pale: #fce4ec;
+    --pink-blush: #fff0f5;
+    --gold: #f4c2c2;
+    --white: #fff9fc;
+    --text: #7b2d4f;
+  }
+
+  body {
+    background: var(--pink-blush);
+    font-family: 'Cormorant Garamond', serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Bubbly background blobs */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  body::before {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #f48fb1, #f06292);
+    top: -100px; left: -100px;
+    animation: blobMove1 8s ease-in-out infinite alternate;
+  }
+  body::after {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #fce4ec, #f8bbd0);
+    bottom: -80px; right: -80px;
+    animation: blobMove2 10s ease-in-out infinite alternate;
+  }
+  @keyframes blobMove1 { to { transform: translate(60px, 40px) scale(1.1); } }
+  @keyframes blobMove2 { to { transform: translate(-40px, -60px) scale(1.15); } }
+
+  .card {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1.5px solid rgba(246,143,177,0.4);
+    border-radius: 28px;
+    padding: 48px 44px 40px;
+    max-width: 480px;
+    width: 92%;
+    text-align: center;
+    box-shadow: 0 8px 60px rgba(214,51,132,0.12), 0 2px 16px rgba(240,98,146,0.08);
+    position: relative;
+    z-index: 10;
+    animation: cardIn 0.7s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes cardIn {
+    from { opacity:0; transform: translateY(30px) scale(0.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+
+  .crown {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    display: block;
+    animation: floatCrown 3s ease-in-out infinite;
+  }
+  @keyframes floatCrown { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--pink-deep);
+    line-height: 1.2;
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  .subtitle {
+    font-size: 1.05rem;
+    color: var(--pink-mid);
+    font-style: italic;
+    font-weight: 300;
+    margin-bottom: 32px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Style selector */
+  .style-label {
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pink-mid);
+    margin-bottom: 12px;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .style-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .pill {
+    padding: 7px 16px;
+    border-radius: 50px;
+    border: 1.5px solid var(--pink-soft);
+    background: transparent;
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-style: italic;
+  }
+  .pill:hover { background: var(--pink-pale); border-color: var(--pink-mid); }
+  .pill.active {
+    background: linear-gradient(135deg, var(--pink-mid), var(--pink-deep));
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 3px 14px rgba(214,51,132,0.3);
+  }
+
+  /* Result box */
+  .result-box {
+    background: linear-gradient(135deg, #fff0f8, #fce4ec);
+    border: 1.5px solid var(--pink-soft);
+    border-radius: 18px;
+    padding: 26px 20px;
+    margin-bottom: 24px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-box::before {
+    content: '✦';
+    position: absolute;
+    top: 10px; left: 16px;
+    color: rgba(214,51,132,0.2);
+    font-size: 1.2rem;
+  }
+  .result-box::after {
+    content: '✦';
+    position: absolute;
+    bottom: 10px; right: 16px;
+    color: rgba(214,51,132,0.2);
+    font-size: 1.2rem;
+  }
+
+  .name-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--pink-deep);
+    letter-spacing: 0.02em;
+    transition: all 0.35s ease;
+    line-height: 1.15;
+  }
+  .name-display.animating {
+    opacity: 0;
+    transform: scale(0.88) translateY(8px);
+  }
+
+  .name-meaning {
+    font-size: 0.95rem;
+    color: var(--pink-mid);
+    font-style: italic;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.4s ease 0.2s;
+    font-weight: 300;
+  }
+  .name-meaning.visible { opacity: 1; }
+
+  .placeholder-text {
+    font-size: 1rem;
+    color: rgba(214,51,132,0.4);
+    font-style: italic;
+  }
+
+  /* Button */
+  .btn-generate {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #f06292, #d63384, #e91e8c);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(214,51,132,0.35);
+    animation: gradShift 4s ease infinite;
+    position: relative;
+    overflow: hidden;
+  }
+  @keyframes gradShift {
+    0%,100%{background-position:0% 50%} 50%{background-position:100% 50%}
+  }
+  .btn-generate::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+  .btn-generate:hover::after { left: 150%; }
+  .btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(214,51,132,0.45);
+  }
+  .btn-generate:active { transform: translateY(0); }
+
+  /* Hearts burst */
+  .hearts-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .heart-particle {
+    position: absolute;
+    font-size: 1.2rem;
+    animation: heartFly 1.2s ease-out forwards;
+    opacity: 1;
+  }
+  @keyframes heartFly {
+    0%   { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-200px) scale(0.3) rotate(20deg); opacity: 0; }
+  }
+
+  /* Footer */
+  .card-footer {
+    margin-top: 20px;
+    font-size: 0.82rem;
+    color: rgba(214,51,132,0.5);
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  /* Sparkles */
+  .sparkle {
+    position: absolute;
+    pointer-events: none;
+    animation: sparkleFade 1s ease forwards;
+    font-size: 1rem;
+  }
+  @keyframes sparkleFade {
+    0%   { opacity:1; transform: scale(0.5) rotate(0deg); }
+    100% { opacity:0; transform: scale(1.5) rotate(180deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts-container" id="heartsContainer"></div>
+
+<div class="card">
+  <span class="crown">👑</span>
+  <h1>Sissy Name Generator</h1>
+  <p class="subtitle">Discover your feminine alter ego</p>
+
+  <p class="style-label">Choose your vibe</p>
+  <div class="style-pills">
+    <button class="pill active" data-style="bimbo">💅 Bimbo</button>
+    <button class="pill" data-style="princess">👸 Princess</button>
+    <button class="pill" data-style="maid">🎀 Maid</button>
+    <button class="pill" data-style="doll">🪆 Dolly</button>
+  </div>
+
+  <div class="result-box" id="resultBox">
+    <span class="placeholder-text" id="placeholder">Click the button below, darling~ ✨</span>
+    <div class="name-display" id="nameDisplay" style="display:none"></div>
+    <div class="name-meaning" id="nameMeaning"></div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="generateName()">
+    ✨ Generate My Sissy Name ✨
+  </button>
+
+  <p class="card-footer">More content & full feminization journey on Patreon 🎀</p>
+</div>
+
+<script>
+const names = {
+  bimbo: [
+    { name: "Bambi", meaning: "Sweet & dizzy – born to be adored" },
+    { name: "Candy", meaning: "Irresistibly sweet, impossible to resist" },
+    { name: "Barbie", meaning: "Perfect in pink, always picture-ready" },
+    { name: "Bubbly", meaning: "Effervescent charm and bubbly energy" },
+    { name: "Lexxi", meaning: "Glamorous and unapologetically fabulous" },
+    { name: "Nikki", meaning: "Flirty, fun and always in the spotlight" },
+    { name: "Brittany", meaning: "Playful goddess with a heart of glitter" },
+    { name: "Muffy", meaning: "Soft, cute and endlessly adorable" },
+    { name: "Coco", meaning: "Chic darling with bubblegum dreams" },
+    { name: "Tiffany", meaning: "Dripping in pink, born to be spoiled" },
+    { name: "Kimmi", meaning: "Giggling sweetheart with mile-long lashes" },
+    { name: "Dolly", meaning: "Precious little doll, made to be played with" },
+  ],
+  princess: [
+    { name: "Seraphina", meaning: "Angelic beauty descended from the heavens" },
+    { name: "Aurelia", meaning: "Golden goddess, radiant and regal" },
+    { name: "Isabelle", meaning: "Devoted to beauty and grace" },
+    { name: "Celestine", meaning: "Ethereal and divine, touched by the stars" },
+    { name: "Vivienne", meaning: "Full of life and timeless elegance" },
+    { name: "Rosalind", meaning: "Beautiful rose – delicate yet powerful" },
+    { name: "Elara", meaning: "Dreamy and enchanting as moonlight" },
+    { name: "Lysandra", meaning: "Liberator of beauty and feminine power" },
+    { name: "Ophelia", meaning: "Poetic soul wrapped in silk and grace" },
+    { name: "Calista", meaning: "Most beautiful – a true femme ideal" },
+  ],
+  maid: [
+    { name: "Sissy", meaning: "Devoted, obedient and sweetly feminine" },
+    { name: "Fifi", meaning: "Eager to please, dressed to perfection" },
+    { name: "Maisie", meaning: "Gentle and dutiful, always at your service" },
+    { name: "Cindy", meaning: "Bright and cheerful in her little uniform" },
+    { name: "Bridget", meaning: "Soft-spoken and sweetly subservient" },
+    { name: "Rosie", meaning: "Rosy-cheeked and endlessly charming" },
+    { name: "Penelope", meaning: "Patient, devoted and impeccably dressed" },
+    { name: "Winnie", meaning: "Warm heart, curtsy perfect, always smiling" },
+    { name: "Bettie", meaning: "Retro charm with ribbons in her hair" },
+    { name: "Gracie", meaning: "Graceful movements and a gentle spirit" },
+  ],
+  doll: [
+    { name: "Lolita", meaning: "Porcelain perfection in pastels and lace" },
+    { name: "Pixie", meaning: "Tiny, magical and impossibly cute" },
+    { name: "Kiki", meaning: "Playful little doll with sparkling eyes" },
+    { name: "Mochi", meaning: "Soft, round and absolutely irresistible" },
+    { name: "Poppet", meaning: "A tiny precious thing to be treasured" },
+    { name: "Bubbles", meaning: "Light as air, delicate and effervescent" },
+    { name: "Glimmer", meaning: "Shimmering beauty that catches every eye" },
+    { name: "Lilou", meaning: "French-kissed sweetness in every detail" },
+    { name: "Mimsy", meaning: "Whimsical, dreamy and forever adorable" },
+    { name: "Twinkle", meaning: "Sparkling presence that lights up every room" },
+  ],
+};
+
+let currentStyle = 'bimbo';
+
+// Style pill selector
+document.querySelectorAll('.pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    currentStyle = pill.dataset.style;
+  });
+});
+
+function generateName() {
+  const pool = names[currentStyle];
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+
+  const nameEl = document.getElementById('nameDisplay');
+  const meaningEl = document.getElementById('nameMeaning');
+  const placeholder = document.getElementById('placeholder');
+
+  // Hide placeholder
+  placeholder.style.display = 'none';
+  nameEl.style.display = 'block';
+
+  // Animate out
+  nameEl.classList.add('animating');
+  meaningEl.classList.remove('visible');
+
+  setTimeout(() => {
+    nameEl.textContent = pick.name;
+    meaningEl.textContent = '✦ ' + pick.meaning + ' ✦';
+    nameEl.classList.remove('animating');
+    setTimeout(() => meaningEl.classList.add('visible'), 100);
+  }, 300);
+
+  // Hearts burst
+  burstHearts();
+}
+
+function burstHearts() {
+  const container = document.getElementById('heartsContainer');
+  const btn = document.getElementById('generateBtn');
+  const rect = btn.getBoundingClientRect();
+  const emojis = ['💗','💕','🌸','✨','💖','🎀','💝'];
+
+  for (let i = 0; i < 10; i++) {
+    setTimeout(() => {
+      const el = document.createElement('span');
+      el.className = 'heart-particle';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = (rect.left + rect.width * Math.random()) + 'px';
+      el.style.top = rect.top + 'px';
+      el.style.animationDelay = (Math.random() * 0.3) + 's';
+      el.style.fontSize = (0.8 + Math.random() * 0.8) + 'rem';
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 1400);
+    }, i * 40);
+  }
+}
+</script>
+</body>
+</html>
